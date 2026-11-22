@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -44,11 +43,16 @@ int main() {
         printf("[5] Books read\n");
         printf("[6] books not read\n");
         printf("[7] see how many books you have read so far\n");
-        printf("[8]search for a book just type the book name\n");
+        printf("[8] search for a book just type the book name\n");
         printf("\n");
 
         if (scanf("%d", &menu_option) != 1) {
+            printf("invalid menu input\n");
             break;
+        }
+
+        int ch;
+        while ((ch = getchar()) != '\n' && ch != EOF) {
         }
 
         if (menu_option == -1) {
@@ -93,14 +97,33 @@ int menu_logic(int menu_option, books **library, int total, libraries *general_l
             int book_status = 0;
 
             printf("what book have you read pick it by the book number to see the books number enter -1\n press enter then 2: ");
-            scanf("%d", &book_selected);
+
+            if (scanf("%d", &book_selected) != 1) {
+                printf("invalid book number\n");
+                int ch;
+                while ((ch = getchar()) != '\n' && ch != EOF) {
+                }
+                break;
+            }
 
             if (book_selected == -1) {
                 break;
             }
 
+            if (book_selected < 1 || book_selected > total) {
+                printf("invalid book number\n");
+                break;
+            }
+
             printf("enter 1 if the book is read and 0 if its not: ");
-            scanf("%d", &book_status);
+
+            if (scanf("%d", &book_status) != 1 || (book_status != 0 && book_status != 1)) {
+                printf("invalid status (enter 0 or 1)\n");
+                int ch;
+                while ((ch = getchar()) != '\n' && ch != EOF) {
+                }
+                break;
+            }
 
             book_selected--;
 
@@ -153,6 +176,7 @@ int menu_logic(int menu_option, books **library, int total, libraries *general_l
             int size = 100;
             char *bookname = calloc(size, sizeof(char));
             char onechar;
+            int input_failed = 0;
 
             if (bookname == NULL) {
                 printf("calloc failed\n");
@@ -162,7 +186,10 @@ int menu_logic(int menu_option, books **library, int total, libraries *general_l
             printf("enter the book name: ");
 
             for (int i = 0;; i++) {
-                scanf("%c", &onechar);
+                if (scanf("%c", &onechar) != 1) {
+                    input_failed = 1;
+                    break;
+                }
 
                 if (onechar == '\n') {
                     bookname[i] = '\0';
@@ -174,6 +201,7 @@ int menu_logic(int menu_option, books **library, int total, libraries *general_l
 
                         if (temp == NULL) {
                             printf("realloc failed\n");
+                            input_failed = 1;
                             break;
                         }
 
@@ -184,6 +212,11 @@ int menu_logic(int menu_option, books **library, int total, libraries *general_l
                     bookname[i] = onechar;
                     bookname[i + 1] = '\0';
                 }
+            }
+
+            if (input_failed) {
+                free(bookname);
+                break;
             }
 
             for (int i = 0; i < total; i++) {
@@ -198,6 +231,7 @@ int menu_logic(int menu_option, books **library, int total, libraries *general_l
                     }
                 }
             }
+
             free(bookname);
             break;
         }
@@ -209,7 +243,7 @@ int menu_logic(int menu_option, books **library, int total, libraries *general_l
 int add_books(books **library, int total) {
     int many_books = 0;
     int control = 0;
-    int capacity = DEFAULT_SIZE;
+    int capacity = total > DEFAULT_SIZE ? total : DEFAULT_SIZE;
     char choice;
 
     while (1) {
