@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -44,18 +45,22 @@ int main() {
         printf("[6] books not read\n");
         printf("[7] see how many books you have read so far\n");
         printf("[8] search for a book just type the book name\n");
+        printf("[9] Edit book name or author or both\n");
         printf("\n");
 
         if (scanf("%d", &menu_option) != 1) {
             printf("invalid menu input\n");
-            break;
+            int ch;
+            while ((ch = getchar()) != '\n' && ch != EOF) {
+            }
+            continue;
         }
 
         int ch;
         while ((ch = getchar()) != '\n' && ch != EOF) {
         }
 
-        if (menu_option == -1) {
+        if (menu_option == 0 || menu_option == -1) {
             break;
         }
 
@@ -117,7 +122,9 @@ int menu_logic(int menu_option, books **library, int total, libraries *general_l
 
             printf("enter 1 if the book is read and 0 if its not: ");
 
-            if (scanf("%d", &book_status) != 1 || (book_status != 0 && book_status != 1)) {
+            if (scanf("%d", &book_status) != 1 ||
+                (book_status != 0 && book_status != 1)) {
+
                 printf("invalid status (enter 0 or 1)\n");
                 int ch;
                 while ((ch = getchar()) != '\n' && ch != EOF) {
@@ -169,7 +176,8 @@ int menu_logic(int menu_option, books **library, int total, libraries *general_l
             break;
 
         case 7:
-            printf("you have read %d books so far\n", general_library->books_read_count);
+            printf("you have read %d books so far\n",
+                   general_library->books_read_count);
             break;
 
         case 8: {
@@ -235,6 +243,174 @@ int menu_logic(int menu_option, books **library, int total, libraries *general_l
             free(bookname);
             break;
         }
+
+        case 9: {
+            int choice = 0;
+
+            printf("what do you wanna change? type 0 for name, 1 for author, 2 for both, 3 to go back:\n");
+
+            if (scanf("%d", &choice) != 1) {
+                printf("invalid choice\n");
+                int ch;
+                while ((ch = getchar()) != '\n' && ch != EOF) {
+                }
+                break;
+            }
+
+            switch (choice) {
+
+                case 0:
+                case 1:
+                case 2: {
+                    int book_index;
+                    int size = 50;
+
+                    printf("enter the book address: ");
+
+                    if (scanf("%d", &book_index) != 1) {
+                        printf("invalid book number\n");
+                        int ch;
+                        while ((ch = getchar()) != '\n' && ch != EOF) {
+                        }
+                        break;
+                    }
+
+                    int ch;
+                    while ((ch = getchar()) != '\n' && ch != EOF) {
+                    }
+
+                    if (book_index < 1 || book_index > total) {
+                        printf("invalid book number\n");
+                        break;
+                    }
+
+                    char c;
+                    char *newbookname = NULL;
+                    char *newauthor = NULL;
+                    int input_failed = 0;
+
+                    if (choice == 0 || choice == 2) {
+                        size = 50;
+                        newbookname = calloc(size, sizeof(char));
+
+                        if (newbookname == NULL) {
+                            printf("calloc failed\n");
+                            break;
+                        }
+
+                        printf("enter the new bookname: ");
+
+                        for (int i = 0;; i++) {
+                            if (scanf("%c", &c) != 1) {
+                                input_failed = 1;
+                                break;
+                            }
+
+                            if (c == '\n') {
+                                newbookname[i] = '\0';
+                                break;
+
+                            } else {
+                                if (i >= size - 1) {
+                                    char *temp = realloc(newbookname, size + 50);
+
+                                    if (temp == NULL) {
+                                        printf("realloc failed\n");
+                                        input_failed = 1;
+                                        break;
+                                    }
+
+                                    newbookname = temp;
+                                    size += 50;
+                                }
+
+                                newbookname[i] = c;
+                                newbookname[i + 1] = '\0';
+                            }
+                        }
+
+                        if (input_failed) {
+                            free(newbookname);
+                            break;
+                        }
+                    }
+
+                    if (choice == 1 || choice == 2) {
+                        size = 50;
+                        newauthor = calloc(size, sizeof(char));
+
+                        if (newauthor == NULL) {
+                            printf("calloc failed\n");
+                            free(newbookname);
+                            break;
+                        }
+
+                        printf("enter the new author: ");
+
+                        for (int i = 0;; i++) {
+                            if (scanf("%c", &c) != 1) {
+                                input_failed = 1;
+                                break;
+                            }
+
+                            if (c == '\n') {
+                                newauthor[i] = '\0';
+                                break;
+
+                            } else {
+                                if (i >= size - 1) {
+                                    char *temp = realloc(newauthor, size + 50);
+
+                                    if (temp == NULL) {
+                                        printf("realloc failed\n");
+                                        input_failed = 1;
+                                        break;
+                                    }
+
+                                    newauthor = temp;
+                                    size += 50;
+                                }
+
+                                newauthor[i] = c;
+                                newauthor[i + 1] = '\0';
+                            }
+                        }
+
+                        if (input_failed) {
+                            free(newbookname);
+                            free(newauthor);
+                            break;
+                        }
+                    }
+
+                    if (newbookname != NULL) {
+                        free((*library)[book_index - 1].name);
+                        (*library)[book_index - 1].name = newbookname;
+                    }
+
+                    if (newauthor != NULL) {
+                        free((*library)[book_index - 1].author);
+                        (*library)[book_index - 1].author = newauthor;
+                    }
+
+                    printf("book updated successfully\n");
+                    break;
+                }
+
+                case 3:
+                    break;
+
+                default:
+                    printf("invalid choice\n");
+                    break;
+            }
+
+            break;
+        }
+
+        default:
+            printf("invalid menu option\n");
+            break;
     }
 
     return total;
@@ -261,7 +437,8 @@ int add_books(books **library, int total) {
         for (control = 0; control < many_books; control++) {
 
             if (total >= capacity) {
-                books *temp = realloc(*library, (capacity + 1) * sizeof(books));
+                books *temp = realloc(*library,
+                                      (capacity + 1) * sizeof(books));
 
                 if (temp == NULL) {
                     printf("realloc failed\n");
